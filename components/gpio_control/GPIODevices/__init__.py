@@ -1,3 +1,4 @@
+from .ec11_rotary_encoder import EC11RotaryEncoder
 from .rotary_encoder import RotaryEncoder
 from .two_button_control import TwoButtonControl
 from .shutdown_button import ShutdownButton

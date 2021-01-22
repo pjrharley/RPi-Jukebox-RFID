@@ -16,7 +16,6 @@ GPIO.setmode(GPIO.BCM)
 
 logger = logging.getLogger(__name__)
 
-
 def getFunctionCall(function_name):
     try:
         if function_name != 'None':
@@ -27,10 +26,12 @@ def getFunctionCall(function_name):
 
 
 def generate_device(config, deviceName):
-    print(deviceName)
     device_type = config.get('Type')
+    print("{} ({})".format(deviceName,device_type))
+
     if deviceName.lower() == 'VolumeControl'.lower():
         return VolumeControl(config)
+
     elif device_type == 'TwoButtonControl':
         logger.info('adding TwoButtonControl')
         return TwoButtonControl(
@@ -43,6 +44,7 @@ def generate_device(config, deviceName):
             hold_repeat=config.getboolean('hold_repeat', False),
             hold_time=config.getfloat('hold_time', fallback=0.3),
             name=deviceName)
+
     elif device_type in ('Button', 'SimpleButton'):
         return SimpleButton(config.getint('Pin'),
                             action=getFunctionCall(config.get('functionCall')),
@@ -78,6 +80,16 @@ def generate_device(config, deviceName):
                               hold_repeat=config.getboolean('hold_repeat', False),
                               hold_time=config.getfloat('hold_time', fallback=0.3),
                               pull_up_down=config.get('pull_up_down', fallback=GPIO.PUD_UP))
+    elif device_type == 'EC11RotaryEncoder':
+        return EC11RotaryEncoder(config.getint('pinA'),
+                                 config.getint('pinB'),
+                                 config.getint('pinC'), 
+                                 getFunctionCall(config.get('functionCallUp')),
+                                 getFunctionCall(config.get('functionCallDown')),
+                                 getFunctionCall(config.get('functionCallClick')),
+                                 getFunctionCall(config.get('functionCallHold')),
+                                 config.getfloat('hold_time', fallback=2.0))
+
     logger.warning('cannot find {}'.format(deviceName))
     return None
 
@@ -94,14 +106,13 @@ def get_all_devices(config):
             else:
                 logger.warning('Could not add Device {} with {}'.format(section, config.items(section)))
         else:
-            logger.info('Device {} not enabled'.format(section))
+            logger.debug('Device {} not enabled'.format(section))
     for dev in devices:
         print(dev)
     return devices
 
 
 if __name__ == "__main__":
-
     logging.basicConfig(level='INFO')
     logger = logging.getLogger()
     logger.setLevel('INFO')
